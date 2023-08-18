@@ -15,6 +15,7 @@ For this challenge, we would like you to explore and select a dataset from the r
 - we are looking for location-based insights
 - we like Shiny apps that are formatted as an [R package](https://mastering-shiny.org/scaling-packaging.html)
 - we like Shiny apps that use [modules](https://mastering-shiny.org/scaling-modules.html)
+- we like virtual environments to manage package versions
 - our [geographr](https://github.com/humaniverse/geographr) R package may prove to be helpful
 - the end result of the Shiny app should be understandable to a non-technical audience
 
