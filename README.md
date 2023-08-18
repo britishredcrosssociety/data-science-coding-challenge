@@ -7,7 +7,7 @@ For this challenge, we would like you to explore and select a dataset from the r
 
 - programatically scrape your selected data from the web
 - perform an exploratory and/or inferential analyses
-- use R Shiny visualise the results
+- use R Shiny to visualise the results
 
 ## Tips:
 - When selecting the parameters for the data on nomis, we recommend selecting `Lower layer Super Output Areas` for the type of geography. Other geographies are also acceptable
