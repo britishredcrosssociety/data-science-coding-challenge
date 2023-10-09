@@ -15,7 +15,7 @@ We would like you to tell us a story based on your analysis of your selected dat
 We would also like you to submit the code you write for this challenge:
 1. Fork this repository
 2. Implement the request listed above
-3. Submit a pull request by October 20th.
+3. Submit a pull request between 13th October and 20th October.
 
 ## Tips:
 - When selecting the parameters for the data on nomis, we recommend selecting `Lower layer Super Output Areas` for the type of geography. Other geographies are also acceptable
