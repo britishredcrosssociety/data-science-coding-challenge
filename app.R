@@ -18,10 +18,10 @@ library(leaflet)
 library(janitor)
 
 # import cleaned census data
-tmp1 <- readRDS("./data/LSOA/census_2021_LSOA_data.rds")
-tmp2 <- readRDS("./data/LTLA/census_2021_LTLA_data.rds")
-tmp3 <- unique(tmp2$local_authority)
-tmp4 <- unique(tmp2$type)
+tmp1 <- readRDS("./data/LSOA/census_2021_LSOA_data.rds") #load LSOA level data
+tmp2 <- readRDS("./data/LTLA/census_2021_LTLA_data.rds") #Load Local Authority level data
+tmp3 <- unique(tmp2$local_authority) #local authority names
+tmp4 <- unique(tmp2$type) #type names
 tmp5 <- tmp2 %>% select(type,variable) %>% distinct(.)
 
 # read ONS Local Authority Boundary shapefile
@@ -32,7 +32,9 @@ map1 %<>% rename(local_authority=LAD21NM)
 # function 1 tail data to clip number of shown records
 tail_slice <- function(dat,obs){
   
+  #initial data slice
   s1 <- dat[1:obs-1,]
+  #merge data rows below cutoff limit
   dat <- s1 %>% rbind(.,dat[obs,] %>%
                         mutate(percentage=sum(dat$percentage[obs:length(dat$percentage)]),
                                value=sum(dat$value[obs:length(dat$value)]),
@@ -51,7 +53,7 @@ system.time
 
 # Define the UI
 ui <- dashboardPage(skin="green",
-                    dashboardHeader(title = "ONS 2021 Census Analysis"),
+                    dashboardHeader(title = "2021 Census Data"),
                     dashboardSidebar(collapsed = T,
                                      sidebarMenu(menuItem("Home", tabName = "page1",
                                                           icon = icon("home")),
@@ -202,7 +204,8 @@ ui <- dashboardPage(skin="green",
                                                                            box is clear before switching between 
                                                                            accommodation and central heating system 
                                                                            visualisations.",
-                                                                           style="text-align: justify;"))),
+                                                                           style="text-align: justify;"),
+                                                                   downloadButton("downloadData", "Download"))),
                                                    fluidRow(column(column = 6,width = 6,
                                                                    plotOutput("p3_p1")),
                                                             column(column = 6,width = 6,
@@ -425,6 +428,19 @@ server <- function(input, output, session) {
       #clean legend appearance
       g1 <- g1 + guides(fill=guide_legend(nrow=3,ncol=3))
       
+      #data for export
+      e1 <- tmp1 %>% filter(local_authority %in%
+                              xx$local_authority)
+      
+      #ability to download selected data
+      output$downloadData <- downloadHandler(
+        filename = function() {
+          # define output name
+          paste0("Local_Authority_Datat_Download", ".csv")},
+        content = function(file) {
+          # Write the dataset to the `file` that will be downloaded
+          write.csv(e1 %>% filter(), file)})
+      
       #return plot
       return(g1)
     }, error = function(e) {
@@ -473,6 +489,7 @@ server <- function(input, output, session) {
   
   #clear leaflet plot when filter entries change
   observe({leafletProxy("p3_p2", data = NULL) %>% clearMarkers()})
+  
 }
 
 #Create the Shiny app
