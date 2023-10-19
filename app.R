@@ -72,8 +72,8 @@ ui <- dashboardPage(skin="green",
                                                           tags$h2(""),
                                                           tags$h4("In 2021, the UK emitted 426.5 million net tonnes of carbon 
                                                                  dioxide equivalent (Mt CO2e), according to the Department of 
-                                                                 Business, Energy & Industrial Strategy, UK Greenhouse Gas 
-                                                                 Emissions 2021. Residential emissions contributed 16% of 
+                                                                 Business, Energy & Industrial Strategy's UK Greenhouse Gas 
+                                                                 Emissions report 2021. Residential emissions contributed 16% of 
                                                                  emissions, with housing heating forming an important.",
                                                                   style="text-align: justify;",),
                                                           tags$h2(""),
@@ -92,11 +92,11 @@ ui <- dashboardPage(skin="green",
                                                           tags$h2(""),
                                                           tags$h4("This Shiny app focuses on showcasing the value of 
                                                                  using ONS census data at different spatial scales 
-                                                                 to aid local delivery retrofit.",
+                                                                 to aid local design for housing retrofit.",
                                                                   style="text-align: justify;"),
                                                           tags$hr(style = "border-top: 1px solid #000000;"),
                                                           tags$h2("Page 1 UK Overview"),
-                                                          tags$h4("The page provides an overview, at a country-wide or 
+                                                          tags$h4("This page provides an overview, at a country-wide or 
                                                                   regional scale, of both the types of housing present 
                                                                   in England and Wales and their central heating systems.",
                                                                   style="text-align: justify;"),
@@ -104,15 +104,15 @@ ui <- dashboardPage(skin="green",
                                                           tags$h2(""),
                                                           tags$h2("Page 2 Local Authority"),
                                                           tags$h4("This page allows the user to choose and compare up to 
-                                                                  three local authority areas regarding their housing 
+                                                                  three local authority areas in terms of their housing 
                                                                   classifications and central heating stocks.",
                                                                   style="text-align: justify;"),
                                                           tags$hr(style = "border-top: 1px solid #000000;"),
                                                           tags$h2(""),
                                                           tags$h2("Page 3 Mapping Overview"),
-                                                          tags$h4("The final shiny page allows the user to understand 
-                                                                  which accommodation or central heating systems are 
-                                                                  most common across the UK across local authorities.",
+                                                          tags$h4("This shiny page allows the user to understand 
+                                                                  which accommodation types and central heating systems are 
+                                                                  most common across local authorities.",
                                                                   style="text-align: justify;"),
                                                           tags$h2(""),
                                                           tags$hr(style = "border-top: 1px solid #000000;")),
@@ -120,7 +120,7 @@ ui <- dashboardPage(skin="green",
                                                           tags$img(src = "shiny_image.png", height = 1060/2, width = 1536/2),
                                                           tags$h2("Credits")),
                                                    column(6,
-                                                          tags$h4("This R Shiny App uses the UK Government ONS census data. 
+                                                          tags$h4("This R Shiny App uses the UK Government's ONS census data. 
                                                           This data is available under the Open Government Licence v3.0."),
                                                           tags$a(href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
                                                                  "Open Government Licence v3.0."),
@@ -132,8 +132,8 @@ ui <- dashboardPage(skin="green",
                                            tabItem("page2",
                                                    column(width = 6,
                                                           align = "left",
-                                                          tags$h1("UK and Regional Data."),
-                                                          tags$h2("Accommodation and Central Heating."),
+                                                          tags$h1("UK and Regional Data"),
+                                                          tags$h2("Accommodation and Central Heating"),
                                                           tags$hr(style = "border-top: 1px solid #000000;"),
                                                           tags$h2(""),
                                                           tags$h4("This tool shows the percentage breakdown by either 
@@ -151,8 +151,8 @@ ui <- dashboardPage(skin="green",
                                            tabItem("page3",
                                                    column(width = 6,
                                                           align = "left",
-                                                          tags$h1("Local Authority Data."),
-                                                          tags$h2("Accommodation and Central Heating."),
+                                                          tags$h1("Local Authority Data"),
+                                                          tags$h2("Accommodation and Central Heating"),
                                                           tags$hr(style = "border-top: 1px solid #000000;"),
                                                           tags$h2(""),
                                                           tags$h4("This tool allows the user to investigate central 
@@ -175,13 +175,13 @@ ui <- dashboardPage(skin="green",
                                                    column(width = 6,
                                                           align = "left",
                                                           tags$h1("Local Authority Mapping"),
-                                                          tags$h2("Accommodation and Central Heating."),
+                                                          tags$h2("Accommodation and Central Heating"),
                                                           tags$hr(style = "border-top: 1px solid #000000;"),
                                                           tags$h2(""),
-                                                          tags$h4("This tool allows users to investigate specific 
-                                                                  Accommodation or Central heating types they would 
+                                                          tags$h4("This tool allows the user to investigate specific 
+                                                                  accommodation or central heating types they would 
                                                                   like to concentrate on. This can help aid where 
-                                                                  retrofit programmes should spatially target.",
+                                                                  retrofit programmes should spatially targeted.",
                                                                   style="text-align: justify;"),
                                                           tags$h2(""),
                                                           tags$h4("A breakdown of the top three local authority areas 
