@@ -1,12 +1,9 @@
-#' Shiny app.
-#'      ONS Census Data Visualisation.
-#'      UK Accommodation types and central heating system.
-#' Version - 1
-#' Date - 13/10/2023
-#' Author - A R Vaughan
-#' 
-#' Data Analysed in the Shiny App is from the Office for National Statistics.
-#' Source: Office for National Statistics licensed under the Open Government Licence v.3.
+# Shiny app.
+#      ONS Census Data Visualisation.
+#      UK Accommodation types and central heating system.
+# Version - 1
+# Date - 13/10/2023
+# Author - A R Vaughan
 
 # load required packages.
 library(shiny)
@@ -15,18 +12,16 @@ library(tidyverse)
 library(ggrepel)
 library(bbplot)
 library(scales)
-library(janitor)
 library(magrittr)
 library(sf)
 library(leaflet)
 
-
 # import cleaned census data
-tmp1 <- readRDS("./data/LSOA/census_2021_LSOA_data.rds") #LSOA level data (merged)
-tmp2 <- readRDS("./data/LTLA/census_2021_LTLA_data.rds") #LTLA level data (merged)
-tmp3 <- unique(tmp2$local_authority) #list of UK Local Authority's 2021
-tmp4 <- unique(tmp2$type) #list of data types present
-tmp5 <- tmp2 %>% select(type,variable) %>% distinct(.) #list of distinct entries
+tmp1 <- readRDS("./data/LSOA/census_2021_LSOA_data.rds")
+tmp2 <- readRDS("./data/LTLA/census_2021_LTLA_data.rds")
+tmp3 <- unique(tmp2$local_authority)
+tmp4 <- unique(tmp2$type)
+tmp5 <- tmp2 %>% select(type,variable) %>% distinct(.)
 
 # read ONS Local Authority Boundary shapefile
 map1 <- read_sf("./data/LA_boundary/LAD_DEC_2021_GB_BFC.shp")
@@ -35,24 +30,26 @@ map1 %<>% rename(local_authority=LAD21NM)
 # define functions
 # function 1 tail data to clip number of shown records
 tail_slice <- function(dat,obs){
-    
-    s1 <- dat[1:obs-1,]
-    dat <- s1 %>% rbind(.,dat[obs,] %>%
-                            mutate(percentage=sum(dat$percentage[obs:length(dat$percentage)]),
-                                   value=sum(dat$value[obs:length(dat$value)]),
-                                   variable="other sources",
-                                   region=dat$region[1],
-                                   country=dat$country[1]))
-    return(dat)}
+  
+  s1 <- dat[1:obs-1,]
+  dat <- s1 %>% rbind(.,dat[obs,] %>%
+                        mutate(percentage=sum(dat$percentage[obs:length(dat$percentage)]),
+                               value=sum(dat$value[obs:length(dat$value)]),
+                               variable="other sources",
+                               region=dat$region[1],
+                               country=dat$country[1]))
+  return(dat)}
 
 # dashboard has 4 pages
-# Page 1 - Home page, overview and licence
-# Page 2 - UK/Regional Overview
-# Page 3 - Local Authority Comparison
-# Page 4 - Map View and Deep Dive
+# Page 1 Home page, overview and licence
+# Page 2 UK/Regional Overview
+# Page 3 Local Authority Comparison
+# Page 4 Map View and Deep Dive
+
+system.time
 
 # Define the UI
-ui <- dashboardPage(skin="red",
+ui <- dashboardPage(skin="green",
                     dashboardHeader(title = "ONS 2021 Census Analysis"),
                     dashboardSidebar(collapsed = T,
                                      sidebarMenu(menuItem("Home", tabName = "page1",
@@ -116,7 +113,7 @@ ui <- dashboardPage(skin="red",
                                                                   style="text-align: justify;"),
                                                           tags$h2(""),
                                                           tags$hr(style = "border-top: 1px solid #000000;")),
-                                                   column(1,
+                                                   column(1,img(src = "shiny_figure.jpeg",height=595,width=1560),
                                                           tags$h2("Credits")),
                                                    column(6,
                                                           tags$h4("This R Shiny App uses the UK Government ONS census data. 
@@ -162,14 +159,14 @@ ui <- dashboardPage(skin="red",
                                                                                     choices = c(tmp3),
                                                                                     multiple = T,
                                                                                     options = list(
-                                                                                        placeholder = 'Please select up to three option',
-                                                                                        maxItems = 3))),
+                                                                                      placeholder = 'Please select up to three option',
+                                                                                      maxItems = 3))),
                                                             column(6,sliderInput("option_p2_o1", "Number of groups:",
                                                                                  min = 3, max = 8, value = 4))),
-                                                       h2("Housing Types"),
-                                                       plotOutput("p2_p1"),
-                                                       h2("Central Heating Types"),
-                                                       plotOutput("p2_p2")),
+                                                   h2("Housing Types"),
+                                                   plotOutput("p2_p1"),
+                                                   h2("Central Heating Types"),
+                                                   plotOutput("p2_p2")),
                                            tabItem("page4",
                                                    column(width = 6,
                                                           align = "left",
@@ -211,272 +208,270 @@ ui <- dashboardPage(skin="red",
 
 # Define the server logic
 server <- function(input, output, session) {
+  
+  #server logic for Page 1
+  #set plot width and height as reactive to option selected
+  plotwidth <- reactive({as.numeric(length(unique(tmp1[[input$option_p1_1]])))})
+  plotheight <- reactive({subset(tmp1,type=input$option_p1_2) %>%
+      select(variable) %>% distinct() %>% nrow(.) %>% as.numeric(.)})
+  
+  #Page 2, Plot 1 contained inside observe to ensure plot width and height are reactive
+  observe({
+    #define plot
+    output$p1_p1 <- renderPlot({
+      #filter LSOA level data 
+      dat <- tmp1 %>% select(input$option_p1_1,type,
+                             variable,value) %>%
+        filter(type==input$option_p1_2) %>%
+        rename(geography=input$option_p1_1) %>%
+        drop_na(geography)
+      
+      #group and summarise LSOA data to selected geography
+      dat <- dat %>%
+        group_by(geography,variable) %>%
+        summarise(across(starts_with("value"), ~sum(.))) %>%
+        ungroup()
+      
+      #calculate percentage breakdowns per group
+      dat <- dat %>%
+        group_by(geography) %>%
+        group_modify(~mutate(., percentage = value/sum(value)*100)) %>%
+        ungroup() %>%
+        mutate(variable=gsub("_"," ",variable))
+      
+      #remove data pointa outside slider range, to appear as grey
+      dat$percentage[which(dat$percentage<input$option_p1_o1[1])] <- NA
+      dat$percentage[which(dat$percentage>input$option_p1_o1[2])] <- NA
+      
+      #plot 1 accommodation or heating system geography breakdown
+      g1 <- dat %>% ggplot(aes(geography,variable,
+                               fill=as.numeric(percentage))) +
+        geom_tile(colour="white",height=0.6) +
+        geom_text(aes(label = round(percentage, 0)),colour="white") +
+        scale_fill_viridis_c(option="H",limits=c(0,50),
+                             oob=squish) +
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
+        scale_y_discrete(labels = function(x) str_wrap(x, width = 60)) +
+        bbc_style() +
+        theme(legend.position = "none",
+              axis.title.x = NULL,
+              axis.title.y = NULL,
+              axis.text.y = element_text(size = 14),
+              axis.text.x = element_text(size = 14,angle = 90, hjust = 1))
+      
+      #only display plot if input entry exists
+      if(length(input$option_p1_1)>=1)
+        g1
+      
+    },height = (plotheight()*30),width = 400+(plotwidth()*100))
+  })
+  
+  #Page 3, Plot 1 - Local Authority Comparison plot for Accommodation Types
+  output$p2_p1 <- renderPlot({
     
-    # Server logic for Page 1
-    # set plot width and height as reactive to option selected
-    plotwidth <- reactive({as.numeric(length(unique(tmp1[[input$option_p1_1]])))})
-    plotheight <- reactive({subset(tmp1,type=input$option_p1_2) %>%
-            select(variable) %>% distinct() %>% nrow(.) %>% as.numeric(.)})
+    #filter data by selected local authority(s) chosen and clean names
+    dat <- tmp2 %>% filter(local_authority %in% 
+                             c(input$option_p2_1)) %>%
+      mutate(variable=gsub("_"," ",variable)) %>%
+      filter(type=="accommodation")
     
-    #Page 2, Plot 1 contained inside observe to ensure plot width and height are reactive
-    observe({
-        #define plot
-        output$p1_p1 <- renderPlot({
-            #filter LSOA level data 
-            dat <- tmp1 %>% select(input$option_p1_1,type,
-                                   variable,value) %>%
-                filter(type==input$option_p1_2) %>%
-                rename(geography=input$option_p1_1) %>%
-                drop_na(geography)
-            
-            #group and summarise LSOA data to selected geography
-            dat <- dat %>%
-                group_by(geography,variable) %>%
-                summarise(across(starts_with("value"), ~sum(.))) %>%
-                ungroup()
-            
-            #calculate percentage breakdowns per group
-            dat <- dat %>%
-                group_by(geography) %>%
-                group_modify(~mutate(., percentage = value/sum(value)*100)) %>%
-                ungroup() %>%
-                mutate(variable=gsub("_"," ",variable))
-            
-            #remove data pointa outside slider range, to appear as grey
-            dat$percentage[which(dat$percentage<input$option_p1_o1[1])] <- NA
-            dat$percentage[which(dat$percentage>input$option_p1_o1[2])] <- NA
-            
-            #plot 1 accommodation or heating system geography breakdown
-            g1 <- dat %>% ggplot(aes(geography,variable,
-                                     fill=as.numeric(percentage))) +
-                geom_tile(colour="white",height=0.6) +
-                geom_text(aes(label = round(percentage, 0)),colour="white") +
-                scale_fill_viridis_c(option="H",limits=c(0,50),
-                                     oob=squish) +
-                scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
-                scale_y_discrete(labels = function(x) str_wrap(x, width = 60)) +
-                bbc_style() +
-                theme(legend.position = "none",
-                      axis.title.x = NULL,
-                      axis.title.y = NULL,
-                      axis.text.y = element_text(size = 14),
-                      axis.text.x = element_text(size = 14,angle = 90, hjust = 1))
-            
-            #only display plot if input entry exists
-            if(length(input$option_p1_1)>=1)
-                g1
-            
-        },height = (plotheight()*30),width = 400+(plotwidth()*100))
-    })
+    #merge lower observations outside slider range input. 
+    #e.g. show 4 types will merge ordered values 4 and below.
+    dat <- dat %>%
+      group_by(local_authority) %>%
+      group_modify(~tail_slice(.,input$option_p2_o1)) %>%
+      ungroup()
     
-    #Page 3, Plot 1 - Local Authority Comparison plot for Accommodation Types
-    output$p2_p1 <- renderPlot({
-        
-        #filter data by selected local authority(s) chosen and clean names
-        dat <- tmp2 %>% filter(local_authority %in% 
-                                   c(input$option_p2_1)) %>%
-            mutate(variable=gsub("_"," ",variable)) %>%
-            filter(type=="accommodation")
-        
-        #merge lower observations outside slider range input. 
-        # e.g. show 4 types will merge ordered values 4 and below.
-        # tail_slice function is defined above.
-        dat <- dat %>%
-            group_by(local_authority) %>%
-            group_modify(~tail_slice(.,input$option_p2_o1)) %>%
-            ungroup()
-        
-        #create position data for ggplot labels
-        dat2 <- dat %>%
-            group_by(local_authority) %>%
-            mutate(cs = rev(cumsum(rev(percentage))), 
-                   pos = percentage/2 + lead(cs, 1),
-                   pos = if_else(is.na(pos), percentage/2, pos))
-        
-        #plot 1 Local Authority Accommodation Breakdown
-        g1 <- dat %>%
-            ggplot(aes(x="",y=percentage,fill = fct_inorder(variable))) +
-            geom_bar(stat = "identity") + coord_polar(theta = "y",start = 0) +
-            geom_label_repel(aes(y = pos,
-                                 label = paste0(round(percentage), "%")),
-                             data = dat2,
-                             size=8, show.legend = F, nudge_x = 1) +
-            scale_fill_brewer(palette = "Dark2") +
-            scale_y_continuous(labels = NULL) +
-            bbc_style() +
-            theme(legend.text = element_text(size = 12)) +
-            facet_wrap(.~local_authority)
-        
-        #clean legend appearance
-        g1 <- g1 + guides(fill=guide_legend(nrow=3,ncol=3))
-        
-        #only display plot if input entry exists
-        if(length(input$option_p2_1)>=1)
-            g1
-        
-        #defined graphic parameters
-        },height = 400,width = 1000)
+    #create position data for ggplot labels
+    dat2 <- dat %>%
+      group_by(local_authority) %>%
+      mutate(cs = rev(cumsum(rev(percentage))), 
+             pos = percentage/2 + lead(cs, 1),
+             pos = if_else(is.na(pos), percentage/2, pos))
     
-    #Page 3, Plot 1 - Local Authority Comparison plot for Central Heating Types
-    output$p2_p2 <- renderPlot({
-        
-        #filter data by selected local authority(s) chosen and clean names
-        dat <- tmp2 %>% filter(local_authority %in% 
-                                   c(input$option_p2_1)) %>%
-            mutate(variable=gsub("_"," ",variable)) %>%
-            filter(type=="heating")
-        
-        #merge lower observations outside slider range input.
-        # e.g. show 4 types will merge ordered values 4 and below.
-        # tail_slice function is defined above.
-        dat <- dat %>%
-            group_by(local_authority) %>%
-            group_modify(~tail_slice(.,input$option_p2_o1)) %>%
-            ungroup()
-        
-        #create position data for ggplot labels
-        dat2 <- dat %>%
-            group_by(local_authority) %>%
-            mutate(cs = rev(cumsum(rev(percentage))), 
-                   pos = percentage/2 + lead(cs, 1),
-                   pos = if_else(is.na(pos), percentage/2, pos))
-        
-        #plot 1 Local Authority Accommodation Breakdown
-        g1 <- dat %>%
-            ggplot(aes(x="",y=percentage,fill = fct_inorder(variable))) +
-            geom_bar(stat = "identity") + coord_polar(theta = "y",start = 0) +
-            geom_label_repel(aes(y = pos,
-                                 label = paste0(round(percentage), "%")),
-                             data = dat2,
-                             size=8, show.legend = F, nudge_x = 1) +
-            scale_fill_brewer(palette = "Dark2") +
-            scale_y_continuous(labels = NULL) +
-            bbc_style() +
-            theme(legend.text = element_text(size = 12)) +
-            facet_wrap(.~local_authority)
-        
-        #clean legend appearance
-        g1 <- g1 + guides(fill=guide_legend(nrow=3,ncol=3))
-        
-        #only display plot if input entry exists
-        if(length(input$option_p2_1)>=1)
-            g1
-        
-        #defined graphic parameters
-        },height = 400,width = 1000)
+    #plot 1 Local Authority Accommodation Breakdown
+    g1 <- dat %>%
+      ggplot(aes(x="",y=percentage,fill = fct_inorder(variable))) +
+      geom_bar(stat = "identity") + coord_polar(theta = "y",start = 0) +
+      geom_label_repel(aes(y = pos,
+                           label = paste0(round(percentage), "%")),
+                       data = dat2,
+                       size=8, show.legend = F, nudge_x = 1) +
+      scale_fill_brewer(palette = "Dark2") +
+      scale_y_continuous(labels = NULL) +
+      bbc_style() +
+      theme(legend.text = element_text(size = 12)) +
+      facet_wrap(.~local_authority)
     
-    # Page 4 - Mapping deep dive into specific technologies per Local Authority
-    # Update choices for SelectizeInput 2 based on the input of SelectizeInput 2 
-    observe({
-        # Reactive switch to update values
-        choices <- switch(input$option_p3_1,
-                          "accommodation" = unique(subset(tmp5,type=="accommodation")$variable),
-                          "heating" = unique(subset(tmp5,type=="heating")$variable))
-        
-        # Update selectizeInput 2 with new choices
-        updateSelectizeInput(session, "option_p3_2", choices = choices, server = T)
-    })
+    #clean legend appearance
+    g1 <- g1 + guides(fill=guide_legend(nrow=3,ncol=3))
     
-    # Page 4, Plot 1 - Top Three Local Authority's (LA's) based on technology. 
-    # If accommodation is chosen, central heating systems are show, and vis vias.
-    output$p3_p1 <- renderPlot({
-        
-        #Function housed in trycatch to suppress errors when no input is selected
-        tryCatch({
-            #filter data based on type variable selected. Select top 3 LA's based on number.
-            xx <- tmp2 %>%
-                filter(type==input$option_p3_1,
-                       variable==input$option_p3_2) %>%
-                arrange(desc(value)) %>%
-                slice(1:3)
-            
-            #filter data using LA's.
-            dat <- tmp2 %>%
-                filter(local_authority %in% xx$local_authority) %>%
-                mutate(variable=gsub("_"," ",variable)) %>%
-                filter(!type==input$option_p3_1)
-            
-            #merge lower observations outside slider range input.
-            # e.g. show 4 types will merge ordered values 4 and below.
-            # tail_slice function is defined above.
-            dat <- dat %>%
-                group_by(local_authority) %>%
-                group_modify(~tail_slice(.,5)) %>%
-                ungroup()
-            
-            #create position data for ggplot labels
-            dat2 <- dat %>%
-                group_by(local_authority) %>%
-                mutate(cs = rev(cumsum(rev(percentage))), 
-                       pos = percentage/2 + lead(cs, 1),
-                       pos = if_else(is.na(pos), percentage/2, pos))
-            
-            #plot 1 Local Authority Breakdown Accommodation/Central Heating
-            g1 <- dat %>%
-                ggplot(aes(x="",y=percentage,fill = fct_inorder(variable))) +
-                geom_bar(stat = "identity") + coord_polar(theta = "y",start = 0) +
-                geom_label_repel(aes(y = pos,
-                                     label = paste0(round(percentage), "%")),
-                                 data = dat2,
-                                 size=8, show.legend = F, nudge_x = 1) +
-                scale_fill_brewer(palette = "Dark2") +
-                scale_y_continuous(labels = NULL) +
-                bbc_style() +
-                theme(legend.text = element_text(size = 12)) +
-                facet_wrap(.~local_authority)
-            
-            #clean legend appearance
-            g1 <- g1 + guides(fill=guide_legend(nrow=3,ncol=3))
-            
-            #return plot
-            return(g1)
-        }, error = function(e) {
-            #suppress errors when no filtering value is present
-            return(NULL)
-        })
-        
-    })
+    #only display plot if input entry exists
+    if(length(input$option_p2_1)>=1)
+      g1
     
-    # Page 4, Plot 2 - Map of Top Three Local Authority's (LA's) based on technology. 
+    #defined graphic parameters
+  },height = 400,width = 1000)
+  
+  #Page 3, Plot 1 - Local Authority Comparison plot for Central Heating Types
+  output$p2_p2 <- renderPlot({
+    
+    #filter data by selected local authority(s) chosen and clean names
+    dat <- tmp2 %>% filter(local_authority %in% 
+                             c(input$option_p2_1)) %>%
+      mutate(variable=gsub("_"," ",variable)) %>%
+      filter(type=="heating")
+    
+    #merge lower observations outside slider range input.
+    #e.g. show 4 types will merge ordered values 4 and below.
+    dat <- dat %>%
+      group_by(local_authority) %>%
+      group_modify(~tail_slice(.,input$option_p2_o1)) %>%
+      ungroup()
+    
+    #create position data for ggplot labels
+    dat2 <- dat %>%
+      group_by(local_authority) %>%
+      mutate(cs = rev(cumsum(rev(percentage))), 
+             pos = percentage/2 + lead(cs, 1),
+             pos = if_else(is.na(pos), percentage/2, pos))
+    
+    #plot 1 Local Authority Accommodation Breakdown
+    g1 <- dat %>%
+      ggplot(aes(x="",y=percentage,fill = fct_inorder(variable))) +
+      geom_bar(stat = "identity") + coord_polar(theta = "y",start = 0) +
+      geom_label_repel(aes(y = pos,
+                           label = paste0(round(percentage), "%")),
+                       data = dat2,
+                       size=8, show.legend = F, nudge_x = 1) +
+      scale_fill_brewer(palette = "Dark2") +
+      scale_y_continuous(labels = NULL) +
+      bbc_style() +
+      theme(legend.text = element_text(size = 12)) +
+      facet_wrap(.~local_authority)
+    
+    #clean legend appearance
+    g1 <- g1 + guides(fill=guide_legend(nrow=3,ncol=3))
+    
+    #only display plot if input entry exists
+    if(length(input$option_p2_1)>=1)
+      g1
+    
+    #defined graphic parameters
+  },height = 400,width = 1000)
+  
+  #Page 4 - Mapping deep dive into specific technologies per Local Authority
+  #Update choices for Input 2 based on the input of Input 2 
+  observe({
+    #Reactive switch to update values
+    choices <- switch(input$option_p3_1,
+                      "accommodation" = unique(subset(tmp5,type=="accommodation")$variable),
+                      "heating" = unique(subset(tmp5,type=="heating")$variable))
+    
+    #Update Input 2 with new choices
+    updateSelectizeInput(session, "option_p3_2", choices = choices, server = T)
+  })
+  
+  #Page 4, Plot 1 - Top Three Local Authority's (LA's) based on technology. 
+  #If accommodation is chosen, central heating systems are shown
+  output$p3_p1 <- renderPlot({
+    
     #Function housed in trycatch to suppress errors when no input is selected
-    output$p3_p2 <- renderLeaflet({
-        
-        #place plotting function in error trycatch to suppress error
-        tryCatch({
-            
-            #filter data based on type variable selected. Select top 3 LA's based on number.
-            xx <-tmp2 %>%
-                filter(type==input$option_p3_1,
-                       variable==input$option_p3_2) %>%
-                arrange(desc(value)) %>%
-                slice(1:3)
-            
-            #filter shapefile data using LA's and convert from BNG to WGS84 coordinate system
-            g1 <- map1 %>%
-                filter(local_authority %in%
-                           xx$local_authority) %>% 
-                st_transform(., 4326)
-            
-            #create leaflet plot using stamen base map and selected shapefile data
-            g1 <- leaflet() %>%
-                addProviderTiles(providers$Stamen.TonerLite,
-                                 options = providerTileOptions(noWrap = TRUE)) %>%
-                setView(lng = median(g1$LONG),
-                        lat = median(g1$LAT),
-                        zoom = 6) %>%
-                addPolygons(data = g1,fillColor = "red",
-                            color = "red")
-            #return plot
-            return(g1)
-        }, error = function(e) {
-            #suppress errors when no filtering value is present
-            return(NULL)
-        })
+    tryCatch({
+      #filter data based on type variable selected. Select top 3 LA's based on number.
+      xx <- tmp2 %>%
+        filter(type==input$option_p3_1,
+               variable==input$option_p3_2) %>%
+        arrange(desc(value)) %>%
+        slice(1:3)
+      
+      #filter data using LA's.
+      dat <- tmp2 %>%
+        filter(local_authority %in% xx$local_authority) %>%
+        mutate(variable=gsub("_"," ",variable)) %>%
+        filter(!type==input$option_p3_1)
+      
+      #merge lower observations outside slider range input.
+      #e.g. show 4 types will merge ordered values 4 and below.
+      #tail_slice function is defined above.
+      dat <- dat %>%
+        group_by(local_authority) %>%
+        group_modify(~tail_slice(.,5)) %>%
+        ungroup()
+      
+      #create position data for ggplot labels
+      dat2 <- dat %>%
+        group_by(local_authority) %>%
+        mutate(cs = rev(cumsum(rev(percentage))), 
+               pos = percentage/2 + lead(cs, 1),
+               pos = if_else(is.na(pos), percentage/2, pos))
+      
+      #plot 1 Local Authority Breakdown Accommodation/Central Heating
+      g1 <- dat %>%
+        ggplot(aes(x="",y=percentage,fill = fct_inorder(variable))) +
+        geom_bar(stat = "identity") + coord_polar(theta = "y",start = 0) +
+        geom_label_repel(aes(y = pos,
+                             label = paste0(round(percentage), "%")),
+                         data = dat2,
+                         size=8, show.legend = F, nudge_x = 1) +
+        scale_fill_brewer(palette = "Dark2") +
+        scale_y_continuous(labels = NULL) +
+        bbc_style() +
+        theme(legend.text = element_text(size = 12)) +
+        facet_wrap(.~local_authority)
+      
+      #clean legend appearance
+      g1 <- g1 + guides(fill=guide_legend(nrow=3,ncol=3))
+      
+      #return plot
+      return(g1)
+    }, error = function(e) {
+      
+      return(NULL)
     })
     
-    #clear leaflet plot when filter entries change
-    observe({leafletProxy("p3_p2", data = NULL) %>% clearMarkers()})
+  })
+  
+  #Page 4, Plot 2 - Map of Top Three Local Authority's (LA's) based on technology. 
+  #Function housed in trycatch to suppress errors when no input is selected
+  output$p3_p2 <- renderLeaflet({
+    
+    #place plotting function in error trycatch to suppress error
+    tryCatch({
+      
+      #filter data based on type variable selected. Select top 3 LA's based on number.
+      xx <-tmp2 %>%
+        filter(type==input$option_p3_1,
+               variable==input$option_p3_2) %>%
+        arrange(desc(value)) %>%
+        slice(1:3)
+      
+      #filter shapefile data using LA's and convert from BNG to WGS84 coordinate system
+      g1 <- map1 %>%
+        filter(local_authority %in%
+                 xx$local_authority) %>% 
+        st_transform(., 4326)
+      
+      #create leaflet plot using stamen base map and selected shapefile data
+      g1 <- leaflet() %>%
+        addProviderTiles(providers$OpenStreetMap,
+                         options = providerTileOptions(noWrap = TRUE)) %>%
+        setView(lng = median(g1$LONG),
+                lat = median(g1$LAT),
+                zoom = 6) %>%
+        addPolygons(data = g1,fillColor = "red",
+                    color = "red")
+      #return plot
+      return(g1)
+    }, error = function(e) {
+      
+      return(NULL)
+    })
+  })
+  
+  #clear leaflet plot when filter entries change
+  observe({leafletProxy("p3_p2", data = NULL) %>% clearMarkers()})
 }
 
-# Create the Shiny app
+#Create the Shiny app
 shinyApp(ui, server)

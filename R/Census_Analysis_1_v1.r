@@ -1,13 +1,13 @@
-#' Analysis 1 - Local Authority and LSOA data merges
-#'    Data housed in data directory
-#'    All data used is available under the Open Government Licence v3.0, from the ONS Census 2021.
-#'    Open Government Licence v3.0 - https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
-#' Version - 1
-#' Date - 13/10/2023
-#' Author - A R Vaughan
-#' 
-#' Data Analysed in the Shiny App is from the Office for National Statistics.
-#' Source: Office for National Statistics licensed under the Open Government Licence v.3.
+# Analysis 1 - Local Authority and LSOA data merges
+#    Data housed in data directory
+#    All data used is available under the Open Government Licence v3.0, from the ONS Census 2021.
+#    Open Government Licence v3.0 - https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+# Version - 1
+# Date - 13/10/2023
+# Author - A R Vaughan
+# 
+# Data Analysed in the Shiny App is from the Office for National Statistics.
+# Source: Office for National Statistics licensed under the Open Government Licence v.3.
 
 # load Library's
 library(tidyverse)

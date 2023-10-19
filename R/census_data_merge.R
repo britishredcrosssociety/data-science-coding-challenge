@@ -1,13 +1,13 @@
-#' Function to Extract and merge Census 2021 data from Bulk
-#'    Data housed in raw-data directory
-#'    All data used is available under the Open Government Licence v3.0, from the ONS Census 2021.
-#'    Open Government Licence v3.0 - https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
-#' Version - 1
-#' Date - 13/10/2023
-#' Author - A R Vaughan
-#' 
-#' Data Analysed in the Shiny App is from the Office for National Statistics.
-#' Source: Office for National Statistics licensed under the Open Government Licence v.3.
+# Function to Extract and merge Census 2021 data from Bulk
+#    Data housed in raw-data directory
+#    All data used is available under the Open Government Licence v3.0, from the ONS Census 2021.
+#    Open Government Licence v3.0 - https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+# Version - 1
+# Date - 13/10/2023
+# Author - A R Vaughan
+# 
+# Data Analysed in the Shiny App is from the Office for National Statistics.
+# Source: Office for National Statistics licensed under the Open Government Licence v.3.
 
 # load Library's
 library(tidyverse)
