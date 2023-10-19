@@ -1,5 +1,5 @@
 #' Shiny app.
-#'      ONS Census Dataset Visualisation.
+#'      ONS Census Data Visualisation.
 #'      UK Accommodation types and central heating system.
 #' Version - 1
 #' Date - 13/10/2023
@@ -116,8 +116,7 @@ ui <- dashboardPage(skin="red",
                                                                   style="text-align: justify;"),
                                                           tags$h2(""),
                                                           tags$hr(style = "border-top: 1px solid #000000;")),
-                                                   column(1,tags$img(height = 128, width = 651,
-                                                                     src = "nomis_image.png"),
+                                                   column(1,
                                                           tags$h2("Credits")),
                                                    column(6,
                                                           tags$h4("This R Shiny App uses the UK Government ONS census data. 
