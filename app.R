@@ -15,6 +15,7 @@ library(scales)
 library(magrittr)
 library(sf)
 library(leaflet)
+library(janitor)
 
 # import cleaned census data
 tmp1 <- readRDS("./data/LSOA/census_2021_LSOA_data.rds")
@@ -113,14 +114,15 @@ ui <- dashboardPage(skin="green",
                                                                   style="text-align: justify;"),
                                                           tags$h2(""),
                                                           tags$hr(style = "border-top: 1px solid #000000;")),
-                                                   column(1,img(src = "shiny_figure.jpeg",height=595,width=1560),
+                                                   column(1,
+                                                          tags$img(src = "shiny_image.png", height = 1060/2, width = 1536/2),
                                                           tags$h2("Credits")),
                                                    column(6,
                                                           tags$h4("This R Shiny App uses the UK Government ONS census data. 
                                                           This data is available under the Open Government Licence v3.0."),
                                                           tags$a(href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
                                                                  "Open Government Licence v3.0."),
-                                                          tags$h4("ONS Censsus data can be downloaded and accesses through 
+                                                          tags$h4("ONS Census data can be downloaded and accesses through 
                                                                   the nomis website."),
                                                           tags$a(href="https://www.nomisweb.co.uk/sources/census_2021",
                                                                  "nomisweb"),
