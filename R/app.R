@@ -179,7 +179,7 @@ server = function(input, output, session){
     input$counties_shape_click},{ 
       
       # Only update the plots if the user selects a county other than Liverpool 
-      if(input$counties_shape_click$id!="Liverpool"){
+      if(input$counties_shape_click$id!="E08000012"){
         barplotdata <-  ggplot.compare.fn(input$counties_shape_click$id)     
       
         output$countyplothealth <- renderPlot(barplotdata$health.plot)
@@ -300,10 +300,10 @@ server = function(input, output, session){
       # Get the choice from the map click  
       lsoa.selected <- input$mersey_shape_click
       output$lsoaplothealth <- renderPlotly(
-        ggplotly(ggplot(df.scatter.lsoa(), aes(covariate, poorhealth, label=factor(LSOA)))+geom_point()+
-                   ylim(0,19)+xlab(labels.scatter.lsoa())+ylab("Poor health")+ list(
+        ggplotly(ggplot(df.scatter.lsoa()$df, aes(covariate, poorhealth, label=factor(LSOA)))+geom_point()+
+                   ylim(0,19)+xlab(df.scatter.lsoa()$lab)+ylab("Poor health")+ list(
                    if (input$smooth) geom_smooth(),
-                   if (is.null(lsoa.selected)==FALSE) geom_point(df.scatter.lsoa()%>%filter(LSOA==lsoa.selected$id), 
+                   if (is.null(lsoa.selected)==FALSE) geom_point(df.scatter.lsoa()$df%>%filter(LSOA==lsoa.selected$id), 
                                                                mapping=aes(covariate, poorhealth),col="red")),
                  source="plotlylsoahealth")
       
