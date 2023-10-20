@@ -1,0 +1,19 @@
+Package: censusApp
+Title: Explore association between health and socio-demographic factors using 2021 Census data
+Version: 0.0.0.9000
+Authors@R: 
+    person("Michelle", "Stanton", , "shell.stanton82@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-1754-4894"))
+Description: Using 2021 Census data for England and Wales, this Shiny app allows the user to
+             explore geographical trends in health and socio-demographic factors. Using Merseyside
+             as a case study, users can look at associations between health and socio-demographic
+             data at the small area-level, and use linear models to assess the strength of these
+             associations.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Depends: 
+    R (>= 2.10)
+LazyData: true
